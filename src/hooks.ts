@@ -2,7 +2,10 @@ import { getString, initLocale } from "./utils/locale";
 import { registerPrefsScripts } from "./modules/preferenceScript";
 import { createZToolkit } from "./utils/ztoolkit";
 import { getPref, setPref } from "./utils/prefs";
-import { sciHubCustomResolver, presetSciHubCustomResolvers } from "./modules/CustomResolver";
+import {
+  sciHubCustomResolver,
+  presetSciHubCustomResolvers,
+} from "./modules/CustomResolver";
 import { CustomResolverManager } from "./modules/CustomResolverManager";
 import { Common } from "./modules/Common";
 
@@ -15,7 +18,6 @@ async function onStartup() {
 
   initLocale();
 
-
   if (!getPref("firstInstall")) {
     setPref("firstInstall", true);
     const url = Zotero.Prefs.get("zoteroscihub.scihub_url");
@@ -23,14 +25,18 @@ async function onStartup() {
     if (Zotero.Prefs.get("zoteroscihub.automatic_pdf_download")) {
       autoDownload = true;
     }
-    if (url && typeof url === 'string') {
+    if (url && typeof url === "string") {
       const resolver = sciHubCustomResolver(url, autoDownload);
       CustomResolverManager.shared.appendCustomResolversInZotero([resolver]);
     } else {
-      CustomResolverManager.shared.appendCustomResolversInZotero(presetSciHubCustomResolvers(true));
+      CustomResolverManager.shared.appendCustomResolversInZotero(
+        presetSciHubCustomResolvers(true),
+      );
     }
   } else {
-    CustomResolverManager.shared.appendCustomResolversInZotero(presetSciHubCustomResolvers(true));
+    CustomResolverManager.shared.appendCustomResolversInZotero(
+      presetSciHubCustomResolvers(true),
+    );
   }
 
   Common.registerPrefs();
@@ -48,7 +54,7 @@ async function onMainWindowLoad(win: _ZoteroTypes.MainWindow): Promise<void> {
   // Create ztoolkit for every window
   addon.data.ztoolkit = createZToolkit();
 
-  Common.registerRightClickMenuItem();
+  Common.registerRightClickMenuItem(win);
 }
 
 async function onMainWindowUnload(win: Window): Promise<void> {
@@ -64,7 +70,6 @@ function onShutdown(): void {
   // @ts-expect-error - Plugin instance is not typed
   delete Zotero[addon.data.config.addonInstance];
 }
-
 
 /**
  * This function is just an example of dispatcher for Preference UI events.

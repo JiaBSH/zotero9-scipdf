@@ -14,21 +14,27 @@ export class Common {
     ztoolkit.getGlobal("Zotero").PreferencePanes.register(prefOptions);
   }
 
-  static registerRightClickMenuItem() {
+  static registerRightClickMenuItem(win: _ZoteroTypes.MainWindow) {
+    const doc = win.document;
+    const menu = doc.querySelector("#zotero-itemmenu");
+    if (!menu) return;
     const menuIcon = `chrome://${config.addonRef}/content/icons/sci-hub-logo.svg`;
-    ztoolkit.Menu.register("item", {
-      tag: "menuitem",
-      id: "zotero-itemmenu-scihub-fetch",
-      label: getString("menuitem-fetch"),
-      isHidden: () => {
-        const items = Zotero.getActiveZoteroPane().getSelectedItems();
-        return !items.some((item) => item.isRegularItem());
-      },
-      commandListener: () => {
-        const zoteroPane = Zotero.getActiveZoteroPane();
-        SciHubFetcher.updateItems(zoteroPane.getSelectedItems(), false);
-      },
-      icon: menuIcon,
+    const XUL_NS =
+      "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+    const menuitem = doc.createElementNS(XUL_NS, "menuitem") as XUL.MenuItem;
+    menuitem.id = "zotero-itemmenu-scihub-fetch";
+    menuitem.setAttribute("label", getString("menuitem-fetch"));
+    menuitem.setAttribute("image", menuIcon);
+    menuitem.addEventListener("command", () => {
+      const zoteroPane = Zotero.getActiveZoteroPane();
+      if (!zoteroPane) return;
+      SciHubFetcher.updateItems(zoteroPane.getSelectedItems(), false);
+    });
+    menu.append(menuitem);
+    menu.addEventListener("popupshowing", () => {
+      const zoteroPane = Zotero.getActiveZoteroPane();
+      const items = zoteroPane?.getSelectedItems() ?? [];
+      menuitem.hidden = !items.some((item) => item.isRegularItem());
     });
   }
 }
